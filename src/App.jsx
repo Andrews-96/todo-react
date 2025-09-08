@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import TodoForm from './components/TodoForm.jsx'
 import TodoList from './components/TodoList.jsx'
-import PropTypes from 'prop-types'
 import './index.css'
 
 const makeId = () => (crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`)
@@ -13,8 +12,20 @@ const FILTERS = {
 }
 
 export default function App() {
-  const [tasks, setTasks] = useState([])
+  // Leer tareas guardadas (si hay) al cargar
+  const [tasks, setTasks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tasks')) ?? []
+    } catch {
+      return []
+    }
+  })
   const [filter, setFilter] = useState(FILTERS.TODAS)
+
+  // Guardar tareas ante cada cambio
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks))
+  }, [tasks])
 
   const addTask = (text) => {
     const taskText = text.trim()
@@ -34,9 +45,9 @@ export default function App() {
 
   const filteredTasks = useMemo(() => {
     switch (filter) {
-      case FILTERS.PENDIENTES: return tasks.filter(t => !t.completed)
-      case FILTERS.COMPLETADAS: return tasks.filter(t => t.completed)
-      default: return tasks
+      case FILTERS.PENDIENTES:   return tasks.filter(t => !t.completed)
+      case FILTERS.COMPLETADAS:  return tasks.filter(t => t.completed)
+      default:                   return tasks
     }
   }, [tasks, filter])
 
@@ -99,5 +110,3 @@ export default function App() {
     </div>
   )
 }
-
-App.propTypes = {}
