@@ -12,17 +12,14 @@ const FILTERS = {
 }
 
 export default function App() {
-  // Leer tareas guardadas (si hay) al cargar
+  // Cargar desde localStorage
   const [tasks, setTasks] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('tasks')) ?? []
-    } catch {
-      return []
-    }
+    try { return JSON.parse(localStorage.getItem('tasks')) ?? [] }
+    catch { return [] }
   })
   const [filter, setFilter] = useState(FILTERS.TODAS)
 
-  // Guardar tareas ante cada cambio
+  // Guardar en localStorage en cada cambio
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks))
   }, [tasks])
@@ -41,6 +38,13 @@ export default function App() {
     const ok = window.confirm('¿Seguro que quieres eliminar esta tarea?')
     if (!ok) return
     setTasks(prev => prev.filter(t => t.id !== id))
+  }
+
+  // ➜ NUEVO: Update (editar tarea)
+  const updateTask = (id, newText) => {
+    const text = newText.trim()
+    if (!text) return
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t))
   }
 
   const filteredTasks = useMemo(() => {
@@ -101,6 +105,7 @@ export default function App() {
           tasks={filteredTasks}
           onToggle={toggleTask}
           onDelete={deleteTask}
+          onEdit={updateTask}   // ← importante
         />
       </section>
 
