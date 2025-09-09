@@ -12,18 +12,23 @@ const FILTERS = {
 }
 
 export default function App() {
-  // Cargar desde localStorage
+  // Estados
   const [tasks, setTasks] = useState(() => {
     try { return JSON.parse(localStorage.getItem('tasks')) ?? [] }
     catch { return [] }
   })
-  const [filter, setFilter] = useState(FILTERS.TODAS)
+  const [filter, setFilter] = useState(() => localStorage.getItem('filter') ?? FILTERS.TODAS)
 
-  // Guardar en localStorage en cada cambio
+  // Persistencia
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks))
   }, [tasks])
 
+  useEffect(() => {
+    localStorage.setItem('filter', filter)
+  }, [filter])
+
+  // Handlers
   const addTask = (text) => {
     const taskText = text.trim()
     if (!taskText) return
@@ -40,13 +45,13 @@ export default function App() {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
-  // ➜ NUEVO: Update (editar tarea)
   const updateTask = (id, newText) => {
     const text = newText.trim()
     if (!text) return
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t))
   }
 
+  // Derivados
   const filteredTasks = useMemo(() => {
     switch (filter) {
       case FILTERS.PENDIENTES:   return tasks.filter(t => !t.completed)
@@ -59,6 +64,7 @@ export default function App() {
   const completed = tasks.filter(t => t.completed).length
   const pending = total - completed
 
+  // UI
   return (
     <div className="app-container">
       <header className="header">
@@ -105,7 +111,7 @@ export default function App() {
           tasks={filteredTasks}
           onToggle={toggleTask}
           onDelete={deleteTask}
-          onEdit={updateTask}   // ← importante
+          onEdit={updateTask}
         />
       </section>
 
@@ -115,3 +121,4 @@ export default function App() {
     </div>
   )
 }
+
