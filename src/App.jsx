@@ -12,14 +12,14 @@ const FILTERS = {
 }
 
 export default function App() {
-  // Estados
+  // Estados con persistencia
   const [tasks, setTasks] = useState(() => {
     try { return JSON.parse(localStorage.getItem('tasks')) ?? [] }
     catch { return [] }
   })
   const [filter, setFilter] = useState(() => localStorage.getItem('filter') ?? FILTERS.TODAS)
 
-  // Persistencia
+  // Persistir tareas y filtro
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks))
   }, [tasks])
@@ -49,6 +49,13 @@ export default function App() {
     const text = newText.trim()
     if (!text) return
     setTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t))
+  }
+
+  const clearCompleted = () => {
+    if (!tasks.some(t => t.completed)) return
+    const ok = window.confirm('¿Eliminar todas las tareas completadas?')
+    if (!ok) return
+    setTasks(prev => prev.filter(t => !t.completed))
   }
 
   // Derivados
@@ -105,6 +112,14 @@ export default function App() {
             <span>Pendientes: <strong>{pending}</strong></span>
             <span>Completadas: <strong>{completed}</strong></span>
           </div>
+
+          <button
+            className="delete"
+            onClick={clearCompleted}
+            disabled={completed === 0}
+          >
+            Eliminar completadas
+          </button>
         </div>
 
         <TodoList
@@ -121,4 +136,3 @@ export default function App() {
     </div>
   )
 }
-
